@@ -1,0 +1,5 @@
+-- DISTINCT (資料去重複)
+-- 整列資料欄是否重複為依據
+-- 一定要寫在前面，但只能有一個
+
+SELECT DISTINCT STORE_NAME FROM store_information;
