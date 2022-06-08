@@ -1,0 +1,377 @@
+-- Database: store_information, geography
+-- Columns of store_information:STORE_ID, STORE_NAME, SALES, STORE_DATE, GEOGRAPHY_ID
+-- Columns of geography: GEOGRAPHY_ID, REGION_NAME
+
+-- DQL(Data Query Language)
+
+
+-- DISTINCT: To select non-repeated data from the database.
+
+SELECT DISTINCT STORE_NAME FROM store_information;
+
+
+-- Condition: WHERE, AND, OR, IN
+-- To obtain more specific, or more precise selection.
+
+-- Ex: Please find the stores that have more than 250 in sales and have opened in business after March 1st 2018.
+
+SELECT STORE_ID,STORE_NAME,SALES,STORE_DATE
+FROM store_information
+	WHERE SALES > 250 AND  STORE_DATE > '2018-03-01' ;
+
+-- Ex: Please find the stores that have more than 1000 in sales, or between 500 and 275.
+
+SELECT STORE_ID,STORE_NAME,SALES
+FROM Store_Information
+	WHERE SALES > 1000
+	OR (SALES BETWEEN 275 AND 500)
+
+-- EX: Please find the stores from ID number 1 to 4.
+
+SELECT * FROM store_information
+	WHERE STORE_ID IN (1,2,3,4);
+
+-- EX: Please select the Los Angeles and Boston stores.
+
+SELECT * FROM store_information
+	WHERE STORE_NAME IN ('Los Angeles', 'Boston');
+
+
+-- LIKE: To obtain data with selective characters
+
+-- EX: Please select all the stores whose names start with letter B.
+
+SELECT * FROM store_information
+	WHERE STORE_NAME LIKE 'B%';
+
+-- EX: Please select all the stores whose names end with letter s.
+
+SELECT * FROM store_information
+	WHERE STORE_NAME LIKE '%s';
+
+
+-- EX: Please select all the stores whose names start with letter L and end with letter s.
+
+SELECT * FROM store_information
+	WHERE STORE_NAME LIKE 'L%S';
+
+
+-- EX: Please select all the stores whose names include "ANG" in it.
+
+SELECT * FROM store_information
+	WHERE STORE_NAME LIKE '%ANG%';
+
+
+-- Ordey by: To organize data with given order ( ascending, descending)
+-- It can be more than one standard for order and they would be prioritized sequently with ",".
+
+-- EX: Please select stores and their sales by descending orders.
+
+SELECT STORE_ID,STORE_NAME,SALES FROM store_information
+	ORDER BY SALES DESC;
+
+
+-- EX: Please select stores by alphabetic orders.
+
+SELECT * FROM store_information
+	ORDER BY STORE_NAME;
+
+-- EX: Please select stores and their sales by descending and alphabetic orders.
+
+SELECT STORE_ID,STORE_NAME,SALES, STORE_DATE FROM store_information
+	ORDER BY SALES DESC, STORE_DATE DESC;
+
+
+-- Commands for calculation: SUM, COUNT, AVG, MAX, MIN, MOD, CEIL, FLOOR, ROUND
+-- MOD(Numerator, denominator): It would yield the remainder.
+-- CEIL(X): It would yield a integer that is equal or more than X.
+-- FLOOR(X): It would yield a integer that is equal or lower than X.
+-- Round(X,[Y]):It would yield a integer with "Y" decimal places.
+
+SELECT SUM(SALES), COUNT(STORE_ID), AVG(SALES),
+ MOD(SUM(SALES),COUNT(STORE_ID)),
+ MAX(SALES),MIN(SALES) 
+FROM store_information;
+
+
+SELECT CEIL(45.1), FLOOR(45.9), ROUND(44.365,1);
+
+
+-- Find the null
+
+SELECT COUNT(STORE_ID) FROM store_information
+WHERE GEOGRAPHY_ID IS NULL;
+
+
+-- Comprehensive practice: Count + Distinct
+-- EX: Please count the distinct stores in the database.
+
+SELECT COUNT(DISTINCT STORE_NAME) FROM store_information;
+
+
+-- GROUP BY: To categorize data with given condition.
+-- EX: Please select the sales of each store.
+
+SELECT STORE_NAME, SUM(SALES) FROM store_information
+GROUP BY STORE_NAME;
+
+SELECT STORE_NAME,SUM(SALES), COUNT(STORE_NAME), AVG(SALES) FROM store_information
+GROUP BY STORE_NAME;
+
+
+-- GROUP_COMCAT: To obtain individual data of the aggregated ones seperately.
+-- GROUP_COMCAT( FIELD, GROUP BY FIELD, SEPERATOR '')
+-- EX: Please select non-repeated stores with aggregated sales and demonstrate individual sales of each store.
+
+SELECT STORE_NAME, COUNT(STORE_ID), SUM(SALES), 
+	GROUP_CONCAT(SALES ORDER BY SALES ASC separator'/')
+FROM store_information
+GROUP BY STORE_NAME;
+
+
+-- AS: To give the selected data a name
+-- Rewrite the example showing the group_comcat with AS added
+-- It is not obligatory to input "AS" to give a name 
+
+SELECT STORE_NAME, COUNT(STORE_ID), SUM(SALES), 
+	GROUP_CONCAT(SALES ORDER BY SALES ASC separator'/') AS "Sales list"
+FROM store_information
+GROUP BY STORE_NAME;
+
+SELECT STORE_NAME, COUNT(STORE_ID) "STORE COUNT", SUM(SALES), 
+	GROUP_CONCAT(SALES ORDER BY SALES ASC separator'/') Sales list
+FROM store_information
+GROUP BY STORE_NAME;
+
+
+-- To select data from multiple files: join
+-- inner join = intersection in statistics
+
+SELECT G.*, S.* 
+FROM geography G INNER JOIN store_information S
+ON G.GEOGRAPHY_ID = S. GEOGRAPHY_ID;
+
+-- Outer join: left join , right join.
+-- In following example, the result would be all the data from geography G including the shared item G.GEOGRAPHY_ID and others.
+
+SELECT G.*, S.* 
+FROM geography G LEFT JOIN store_information S
+ON G.GEOGRAPHY_ID = S. GEOGRAPHY_ID;
+
+-- Other selection 
+-- Ex: Please select all the stores that are NOT listed in store_information.
+
+SELECT G.*, S.* 
+FROM geography G LEFT JOIN store_information S
+ON G.GEOGRAPHY_ID = S. GEOGRAPHY_ID
+WHERE S. GEOGRAPHY_ID IS NULL ;
+
+
+-- Ex: To select a table combining two columns from two different data sheets
+-- In following example, the result would show the unrepeated Boston stores represented with region_name from data sheet geography and store_name from data sheet store_information
+
+SELECT DISTINCT CONCAT( G.region_name,'_',S.store_name) "NAME"
+FROM geography G JOIN store_information S
+ON G.GEOGRAPHY_ID = S.GEOGRAPHY_ID
+WHERE store_name= 'Boston';
+
+
+-- SUBSTRING : To nickname or abbreviate names
+
+SELECT STORE_NAME, SUBSTR(STORE_NAME,3), SUBSTR(STORE_NAME, 3, 4)
+FROM store_information;
+
+-- Trim: To remove characters including blanks or letters
+-- Ex: To remove the blanks
+
+SELECT TRIM(' SAMPLE '), LTRIM(' SAMPLE '), RTRIM(' SAMPLE ');
+
+-- Ex: To remove several letters 
+
+SELECT STORE_ID,STORE_NAME,
+TRIM(LEADING 'Bos' FROM STORE_NAME),
+TRIM(TRAILING 's' FROM STORE_NAME),
+TRIM(BOTH 'L' FROM STORE_NAME)
+FROM store_information;
+
+
+-- Union: it can combine two commands.
+-- Limits: The number and type of columns shall be identical.
+-- "Union" includes nonrepeated data only while "Union all" includes all of the data.
+
+
+SELECT STORE_ID, STORE_NAME FROM store_information
+UNION
+SELECT GEOGRAPHY_ID,REGION_NAME FROM geography;
+
+
+-- Combine with "Left join", "Right join", and "Union" to deliver FULL JOIN.
+
+
+SELECT G.GEOGRAPHY_ID, G.REGION_NAME, S.STORE_ID, S.STORE_NAME, S.STORE_DATE
+FROM geography G 
+LEFT JOIN store_information S ON G.GEOGRAPHY_ID = S.GEOGRAPHY_ID
+UNION
+SELECT G.GEOGRAPHY_ID, G.REGION_NAME, S.STORE_ID, S.STORE_NAME, S.STORE_DATE
+FROM geography G 
+RIGHT JOIN store_information S ON G.GEOGRAPHY_ID = S.GEOGRAPHY_ID;
+
+
+-- Use "Join" and "distinct" to deliver intersection of two data sheets.
+
+CREATE TABLE t1 (
+    id INT PRIMARY KEY
+);
+
+CREATE TABLE t2 LIKE t1;
+
+INSERT INTO t1(id) VALUES(1),(2),(3);
+
+INSERT INTO t2(id) VALUES(2),(3),(4);
+
+
+-- Ex: The intersection of table t1 and t2 is value (2) and (3).
+
+SELECT DISTINCT ID FROM T1 JOIN T2 USING (ID);
+
+
+-- SQL MINUS: To remove the same data from combining two data sheets. 
+
+SELECT * FROM T1 LEFT JOIN T2 USING(ID)
+WHERE T2.ID IS NULL;
+
+SELECT G.GEOGRAPHY_ID 
+FROM geography G
+LEFT JOIN store_information S ON G.GEOGRAPHY_ID = S.GEOGRAPHY_ID
+WHERE S.GEOGRAPHY_ID IS NULL;
+
+
+-- SQL SubQuery
+-- Ex: Please find the store with the highest sales.
+
+select * from store_information
+where sales = ( Select max(sales) 
+	from store_information );
+
+-- Ex: Please find all of the store in the west.
+
+Select sum(sales) from store_information
+where GEOGRAPHY_ID in
+(
+SELECT GEOGRAPHY_ID FROM geography
+WHERE REGION_NAME = 'WEST'
+);
+
+
+-- SubQuery: WITH (Common Table Expression)
+
+G AS
+(
+SELECT GEOGRAPHY_ID, REGION_NAME FROM GEOGRAPHY
+) ,
+S AS
+(
+SELECT GEOGRAPHY_ID, STORE_NAME FROM STORE_INFORMATION
+)
+SELECT* FROM G, S
+WHERE G.GEOGRAPHY_ID= S.GEOGRAPHY_ID;
+
+
+-- Exists: To confirm whether the inner selection is valid.
+-- In following example, the selection of "SUM(SALES)" would be complied only when the inner selection "SELECT * FROM geography WHERE REGION_NAME = 'West'" is valid.
+
+SELECT SUM(S.SALES) 
+FROM store_information S
+
+WHERE EXISTS (
+	SELECT * FROM geography G
+    WHERE G.GEOGRAPHY_ID = S.GEOGRAPHY_ID
+    AND REGION_NAME = 'West'
+);
+
+
+-- CASE WHEN: Condition
+-- Ex: Please select the table of store names and their sales respectively. In addition, the sales of certain regions would be adjusted in the following way.
+
+Select store_name, CASE store_name 
+	WHEN 'LOS ANGELES' THEN SALES * 2
+    WHEN 'SAN DIEGO' THEN SALES * 1.5
+    ELSE SALES END "NEW SALES"
+FROM store_information
+GROUP BY STORE_NAME
+; 
+
+-- Ex: Please select the table of store names and their sales respectively. In addition, the sales would be categorized by amount.
+
+SELECT STORE_ID, STORE_NAME, SALES,
+	CASE 
+		WHEN (SALES BETWEEN 0 AND 1000) THEN '0-1000'
+        WHEN (SALES BETWEEN 1001 AND 2000) THEN '1001-2000'
+        WHEN (SALES BETWEEN 2001 AND 3000) THEN '2001-3000'
+        WHEN SALES > 3000 THEN '>3000'
+        END "RANGE_SALES"
+FROM store_information
+ORDER BY SALES DESC;
+
+
+-- Ranking: SELF JOIN
+-- Ex: Please rank the stores by its sales, in descending order.
+
+SELECT S1.STORE_ID, S1.STORE_NAME, S1.SALES, COUNT(S2.STORE_ID)	"RANK"
+FROM STORE_INFORMATION S1, STORE_INFORMATION S2
+WHERE S2.SALES >= S1.SALES
+
+GROUP BY S1.STORE_ID, S1.STORE_NAME, S1.SALES
+ORDER BY S1.SALES DESC;
+
+
+SELECT STORE_ID, STORE_NAME, SALES, GEOGRAPHY_ID,
+
+	-- rank the stores by its sales, in descending order
+	RANK() OVER (ORDER BY SALES DESC) "RANK",
+
+    -- rank the stores with same store names by its sales, in descending order
+    RANK() OVER (PARTITION BY STORE_NAME  ORDER BY SALES DESC ) "STORE_RANK" ,
+
+    -- rank the stores in same regions by its sales, in descending order
+    RANK() OVER (PARTITION BY GEOGRAPHY_ID  ORDER BY SALES DESC) "GEOGRAPHY_RANK"
+
+FROM STORE_INFORMATION;
+
+
+-- Aggregate Functions with OVER Clause 
+
+SELECT STORE_ID, STORE_NAME, SALES, GEOGRAPHY_ID,
+
+    -- Select the minimum sales, partition by the regions
+    MIN(SALES) OVER (PARTITION BY GEOGRAPHY_ID) MIN_SALES,
+
+    -- Select the maximum sales, partition by the regions
+    MAX(SALES) OVER (PARTITION BY GEOGRAPHY_ID) MAX_SALES,
+
+    -- Count the number of the stores, partition by the regions
+    COUNT(STORE_ID) OVER (PARTITION BY GEOGRAPHY_ID) COUNT_STORE_ID,
+
+    -- Select the sum of the sales, partition by the regions
+    SUM(SALES) OVER (PARTITION BY GEOGRAPHY_ID) SUM_SALES,
+
+    -- Select the average of the sales, partition by the regions
+    AVG(SALES) OVER (PARTITION BY GEOGRAPHY_ID) AVG_SALES
+
+FROM STORE_INFORMATION
+ORDER BY GEOGRAPHY_ID, SALES;
+
+
+-- LAG: To select the previous data either in ascending or descending orders.
+-- LEAD: To select the next data either in ascending or descending orders.
+
+SELECT STORE_ID, STORE_NAME, SALES,
+   
+    LAG(SALES) OVER (ORDER BY SALES) PREV_SALES,
+    
+    LEAD(SALES) OVER (ORDER BY SALES) NEXT_SALES
+
+FROM STORE_INFORMATION
+ORDER BY SALES;
+
+

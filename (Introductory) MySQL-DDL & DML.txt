@@ -1,0 +1,201 @@
+-- DDL: Data Definition Language
+-- To create, alter, drop, truncate a data sheet
+
+-- Column data type: To define the data type for the column. The input data could be integer, number, string, binary, etc.
+
+-- Character: CHAR, VARCHAR, CLOB
+-- CHAR: the size could be up to 2000 (byte, char) with fixed length.
+-- VARCHAR: the size could be up to 4000 (byte, char) with flexible length.
+-- CLOB: the file size could be 4 GB.
+
+-- Number: TINYINT, SMALLINT, INTEGER, BIGINT, REAL, FLAT, DOUBLE PRECISION, NUMERIC
+-- NUMERIC(P,S)
+
+-- TABLE
+-- NOT NULL: Not allowed to leave blank (null) in the column 
+-- UNIQUE: each input data is unique but allows for blank (null) in the column
+-- Check: Setting condition, such as Check(sales > 0)
+-- Primary key : each input data is unique but not allows for blank (null) in the column
+-- Composite key 
+-- Foreign Key: To refer to anotehr datasheet to assure referential integrity
+
+
+
+CREATE TABLE STORE_INFORMATION(
+	STORE_ID   NUMERIC (10,0) PRIMARY KEY,
+	STORE_NAME VARCHAR(255),
+	SALES      NUMERIC (10,0) CHECK (SALES > 0),
+	STORE_DATE datetime,
+	-- GEOGRAPHY_ID NUMBER(10,0) REFERENCES GEOGRAPHY(GEOGRAPHY_ID)
+	GEOGRAPHY_ID NUMERIC (10,0),
+	CONSTRAINT CONSTRAINT_GEOGRAPHY_ID FOREIGN KEY (GEOGRAPHY_ID) REFERENCES GEOGRAPHY (GEOGRAPHY_ID)
+);
+
+
+-- Table relationship
+-- One to One: There is only one governor in a state.
+
+
+-- Create a table for Governors:
+
+CREATE TABLE Gov
+(
+    GID NUMERIC(3) PRIMARY KEY,
+    Name VARCHAR(25),
+    Address VARCHAR(30),
+    TermBegin date,
+    TermEnd date
+);
+
+
+-- Create a table for States:
+
+CREATE TABLE State
+(
+    SID NUMERIC(3) PRIMARY KEY,
+    StateName VARCHAR(15),
+    Population NUMERIC(10),
+    SGID NUMERIC(4),
+    CONSTRAINT CONSTRAINT_SGID_UNIQUE UNIQUE (SGID),
+	CONSTRAINT CONSTRAINT_FK_GOV_GID FOREIGN KEY (SGID) REFERENCES Gov(GID)
+);
+
+
+INSERT INTO Gov (GID, Name, Address, TermBegin, TERMEND) VALUES (110, 'Bob', '123 Any St', '2009-01-01', '2011-12-31');
+
+INSERT INTO State (SID, StateName, Population, SGID) VALUES (111, 'Virginia', 2000000, 110);
+
+
+-- One to many: A vendor could have various product to sell while each product can only belong to one supplier.
+-- Create a table for suppliers:
+
+CREATE TABLE Vendor(
+    VendorNUMERIC NUMERIC(4) PRIMARY KEY,
+    Name VARCHAR(20),
+    Address VARCHAR(200),
+    City VARCHAR(15),
+    Street VARCHAR(200),
+    ZipCode VARCHAR(10),
+    PhoneNUMERIC VARCHAR(12),
+    Status VARCHAR(50)
+);
+
+-- Create a table for products:
+
+CREATE TABLE Inventory(
+    Item VARCHAR(50) PRIMARY KEY,
+    Description VARCHAR(300),
+    CurrentQuantity NUMERIC(4) NOT NULL,
+    VendorNUMERIC NUMERIC(4),
+	CONSTRAINT CONSTRAINT_VENDOR_FK FOREIGN KEY (VendorNUMERIC) REFERENCES Vendor(VendorNUMERIC)
+);
+
+
+
+INSERT INTO Vendor (VENDORNUMERIC, NAME, ADDRESS, CITY, STREET, ZIPCODE, PHONENUMERIC, STATUS) VALUES ('1', 'Apple Inc', '大同區承德路一段1號1樓', '台北市', '承德路', '10351', '02 7743 8068', '營運中');
+INSERT INTO Inventory (ITEM, DESCRIPTION, CURRENTQUANTITY, VENDORNUMERIC) VALUES ('iPhone 7 Plus', 'iPhone 7 Plus 5.5吋手機 32GB(原廠包裝盒+原廠配件)', '10', '1');
+
+
+-- Many to Many: One course could be selected by numerous students and each student could select various courses.
+-- Create a table for courses:
+
+CREATE TABLE Class(
+    ClassID VARCHAR(20) PRIMARY KEY,
+    ClassName VARCHAR(300),
+    Instructor VARCHAR(100)
+);
+
+-- Create a table for students
+
+CREATE TABLE Student(
+    StudentID VARCHAR(20) PRIMARY KEY,
+    Name VARCHAR(100),
+    Major VARCHAR(100),
+    ClassYear VARCHAR(50)
+);
+
+-- Create a table for class and students:
+
+
+CREATE TABLE ClassStudent_Relation(
+    StudentID VARCHAR(20) NOT NULL,
+    ClassID VARCHAR(20) NOT NULL,
+    FOREIGN KEY (StudentID) REFERENCES Student(StudentID),
+    FOREIGN KEY (ClassID) REFERENCES Class(ClassID),
+    UNIQUE (StudentID, ClassID)
+);
+
+
+
+INSERT INTO Class (ClassID, ClassNAME, INSTRUCTOR) VALUES ('1', 'Chinese', 'Mr.Rogers');
+INSERT INTO Class (ClassID, ClassNAME, INSTRUCTOR) VALUES ('2', 'Math', 'Mr. Stark');
+INSERT INTO Class (ClassID, ClassNAME, INSTRUCTOR) VALUES ('3', 'English', 'Mrs.Romanoff');
+INSERT INTO Class (ClassID, ClassNAME, INSTRUCTOR) VALUES ('4', 'Chemistry', 'Mr.White');
+INSERT INTO Class (ClassID, ClassNAME, INSTRUCTOR) VALUES ('5', 'Physics', 'Dr.Cooper');
+INSERT INTO Class (ClassID, ClassNAME, INSTRUCTOR) VALUES ('6', 'History', 'Mr.Nick');
+INSERT INTO Class (ClassID, ClassNAME, INSTRUCTOR) VALUES ('7', 'Geography', 'Mr.Schrader');
+
+INSERT INTO Student (StudentID, NAME, MAJOR, ClassYEAR) VALUES ('1', 'Mike', 'Business Adminstration', 'Freshman');
+INSERT INTO Student (StudentID, NAME, MAJOR, ClassYEAR) VALUES ('2', 'Lucas', 'Management', 'Sophomore');
+INSERT INTO Student (StudentID, NAME, MAJOR, ClassYEAR) VALUES ('3', 'Dustin', 'Accounting', 'Freshman');
+INSERT INTO Student (StudentID, NAME, MAJOR, ClassYEAR) VALUES ('4', 'Will', 'Information Technology', 'Junior');
+INSERT INTO Student (StudentID, NAME, MAJOR, ClassYEAR) VALUES ('5', 'El', 'Physics', 'Master');
+INSERT INTO Student (StudentID, NAME, MAJOR, ClassYEAR) VALUES ('6', 'Max', 'Electronic engineering', 'Junior');
+
+INSERT INTO ClassStudent_Relation (StudentID, ClassID) VALUES ('1', '1');
+INSERT INTO ClassStudent_Relation (StudentID, ClassID) VALUES ('1', '3');
+INSERT INTO ClassStudent_Relation (StudentID, ClassID) VALUES ('2', '1');
+INSERT INTO ClassStudent_Relation (StudentID, ClassID) VALUES ('3', '1');
+INSERT INTO ClassStudent_Relation (StudentID, ClassID) VALUES ('3', '2');
+INSERT INTO ClassStudent_Relation (StudentID, ClassID) VALUES ('3', '5');
+INSERT INTO ClassStudent_Relation (StudentID, ClassID) VALUES ('5', '6');
+INSERT INTO ClassStudent_Relation (StudentID, ClassID) VALUES ('6', '6');
+
+
+-- DML( Add, Modify, Delete)
+
+-- Ex: Add a new store named Apple with following information into datasheet store_information.
+
+INSERT INTO store_information(STORE_ID,STORE_NAME,SALES,STORE_DATE,GEOGRAPHY_ID)
+VALUE (10, 'APPLE', 8000,'2022-05-14 16:36:30',3);
+
+-- Ex: Change the sales and store name as shown below.
+
+UPDATE store_information SET SALES = '8800', STORE_NAME = 'APPLE'
+	WHERE STORE_ID IN (10,11);
+
+
+-- Ex: Delete the Los Angeles stores.
+
+DELETE FROM store_information WHERE STORE_NAME = "Los Angeles";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

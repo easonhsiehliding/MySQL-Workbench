@@ -1,0 +1,110 @@
+-- Database: store_information, geography, countries, departments, employees, job_history, jobs, locations, profession, regions, state.
+-- Columns of store_information: STORE_ID, STORE_NAME, SALES, STORE_DATE, GEOGRAPHY_ID
+
+-- Columns of geography: GEOGRAPHY_ID, REGION_NAME
+
+-- Columns of regions: REGION_ID, REGION_NAME
+
+-- Columns of countries (HR_DB): COUNTRY_ID, COUNTRY_NAME, REGION_ID
+
+-- Columns of departments (HR_DB): DEPARTMENT_ID, DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID
+
+-- Columns of employees (HR_DB): EMPLOYEE_ID, FIRST_NAME, LAST_NAME, EMAIL, PHONE NUMBER, HIRE_DATE, JOB_ID, SALARY, COMMISSION_PCT, MANAGER_ID, DEPARTMENT_ID 
+
+-- Columns of job_history (HR_DB): EMPLOYEE_ID, START_DATE, END_DATE, JOB_ID, DEPARTMENT_ID
+
+-- Columns of jobs (HR_DB): JOB_ID, JOB_TITLE, MIN_SALARY, MAX_SALARY
+
+-- Columns of locations(HR_DB): LOCATION_ID, STREET_ADDRESS, POSTAL_CODE, CITY, STATE_PROVINCE, COUNTRY_ID
+
+-- Columns of profession(HR_DB): ID, PROFESSION
+
+
+
+
+-- Q1: Please select the stores with following conditions:
+-- AND sales is greater than 300
+-- AND stores are located in west
+-- AND store name starts with letter L
+-- OR store date should be between March 1st 2018 and April 30th 2018
+
+-- Ans 1:
+
+SELECT * FROM store_information
+WHERE STORE_DATE BETWEEN 2018-03-01 AND 2018-04-30
+OR (GEOGRAPHY_ID = 2 AND SALES >= 300 AND STORE_NAME LIKE 'L%');
+
+
+-- Q2: Please select stores with following conditions:
+-- Remove those whose average sales are lower than 1000
+-- Remove those whose number of stores is equal or lower than 1
+-- Organize the stores by their average sales in descending order
+
+-- Ans 2:
+
+SELECT STORE_NAME, SUM(SALES), COUNT(STORE_ID), AVG(SALES) 
+FROM store_information
+GROUP BY STORE_NAME
+HAVING AVG(SALES) > 1000 AND COUNT(STORE_ID)>1
+ORDER BY AVG(SALES) DESC;
+
+
+
+-- Q3: Please select the sales of stores in every region and organize them by sales in descending order.
+
+-- Ans 3:
+
+SELECT G.*, IFNULL(SUM(S.SALES),0) "SUM SALES"
+FROM GEOGRAPHY G LEFT JOIN STORE_INFORMATION S
+ON G.GEOGRAPHY_ID = S.GEOGRAPHY_ID
+GROUP BY G.REGION_NAME
+ORDER BY SUM(S.SALES) DESC;
+
+
+
+-- Q4: Please select the number of stores in every region and organize them by store numbers in descending order.
+
+-- Ans 4:
+
+SELECT G.REGION_NAME, COUNT(DISTINCT S.STORE_NAME) "COUNT_STORE"
+FROM GEOGRAPHY G LEFT OUTER JOIN STORE_INFORMATION S
+ON G.GEOGRAPHY_ID = S.GEOGRAPHY_ID
+GROUP BY G.REGION_NAME
+ORDER BY COUNT(DISTINCT S.STORE_NAME) DESC;
+
+
+
+
+-- Q5: Please select the information of all the departments including locations, departments, managers, etc.
+
+-- Ans 5:
+
+SELECT L.COUNTRY_ID, L.STATE_PROVINCE, L.CITY,
+	D.DEPARTMENT_ID, D.DEPARTMENT_NAME,
+    E.EMPLOYEE_ID, E.FIRST_NAME,J.JOB_TITLE
+FROM DEPARTMENTS D JOIN LOCATIONS L ON D.LOCATION_ID = L.LOCATION_ID
+LEFT JOIN EMPLOYEES E ON D.DEPARTMENT_ID = E.DEPARTMENT_ID
+LEFT JOIN JOBS J ON E.JOB_ID = J.JOB_ID;
+
+
+-- Q6: Please select all the employees that has higher salry than its department average.
+
+
+-- Ans 6:
+
+SELECT E.EMPLOYEE_ID, E.FIRST_NAME, E.SALARY, 
+	DAS.DEPARTMENT_ID, D.DEPARTMENT_NAME, DAS.DEP_AVG_SALARY
+FROM (
+
+	SELECT DEPARTMENT_ID, FLOOR(AVG(SALARY)) DEP_AVG_SALARY
+	FROM employees
+	GROUP BY DEPARTMENT_ID
+) DAS, EMPLOYEES E, departments D
+
+WHERE DAS.DEPARTMENT_ID = E.DEPARTMENT_ID
+AND E.DEPARTMENT_ID = D.DEPARTMENT_ID
+AND E.SALARY > DAS.DEP_AVG_SALARY
+ORDER BY DAS.DEP_AVG_SALARY DESC, E.SALARY DESC;
+
+
+
