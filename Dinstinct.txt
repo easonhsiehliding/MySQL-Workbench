@@ -1,3 +1,0 @@
--- DISTINCT (Remove the repeated items/data)
-
-SELECT DISTINCT STORE_NAME FROM store_information;
